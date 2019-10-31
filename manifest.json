@@ -22,7 +22,7 @@
   "content_scripts": [
     {
       "matches": ["*://*.gitlab.com/*/boards/*"],
-      "js": ["borderify.js"]
+      "js": ["gitlab.js"]
     }
   ]
 }
