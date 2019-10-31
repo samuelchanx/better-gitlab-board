@@ -7,7 +7,18 @@
   "icons": {
     "48": "icons/border-48.png"
   },
-
+  "browser_action": {
+    "browser_style": true,
+    "default_popup": "popup/input_token.html",
+    "default_icon": {
+      "16": "icons/border-48.png",
+      "32": "icons/border-48.png"
+    }
+  },
+  "permissions": ["storage"],
+  "background": {
+    "scripts": ["background.js"]
+  },
   "content_scripts": [
     {
       "matches": ["*://*.gitlab.com/*/boards/*"],
