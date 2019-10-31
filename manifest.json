@@ -19,6 +19,14 @@
   "background": {
     "scripts": ["background.js"]
   },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "samuelchan@void.com.hk"
+    },
+    "edge": {
+      "browser_action_next_to_addressbar": true
+    }
+  },
   "content_scripts": [
     {
       "matches": ["*://*.gitlab.com/*/boards/*"],
