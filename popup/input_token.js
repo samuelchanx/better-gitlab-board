@@ -1,8 +1,11 @@
-function save() {
-
+async function loadToken() {
+    let res = await browser.storage.sync.get('gitlabToken')
+    document.getElementById('token-input').value = res.gitlabToken
 }
 
-document.getElementById('token-input').onkeypress = function(event) {
+loadToken()
+
+document.getElementById('token-input').onkeypress = async function(event) {
     if (event.keyCode === 13 || event.which === 13) {
         browser.storage.sync.set({
             gitlabToken: event.target.value
