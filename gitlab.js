@@ -7,7 +7,6 @@ function updateIssueName(projectId, issueNumber, newName, privateToken) {
     xhr.addEventListener("readystatechange", function () {
         if (this.readyState === 4) {
             console.log(this.responseText)
-            // TODO: Update local issue board name
             let issue = Array.from(document.querySelectorAll('.board-card .board-card-number')).filter(item => item.textContent.trim().replace('#', '') === issueNumber)
             issue[0].closest('.board-card').querySelector('.board-card-header').textContent = newName
         }
