@@ -1,13 +1,15 @@
 function updateIssueName(projectId, issueNumber, newName, privateToken) {
-    var data = null
+    let data = null
 
-    var xhr = new XMLHttpRequest()
+    let xhr = new XMLHttpRequest()
     xhr.withCredentials = true
 
     xhr.addEventListener("readystatechange", function () {
         if (this.readyState === 4) {
             console.log(this.responseText)
             // TODO: Update local issue board name
+            let issue = Array.from(document.querySelectorAll('.board-card .board-card-number')).filter(item => item.textContent.trim().replace('#', '') === issueNumber)
+            issue[0].closest('.board-card').querySelector('.board-card-header').textContent = newName
         }
     })
 
@@ -20,28 +22,27 @@ function updateIssueName(projectId, issueNumber, newName, privateToken) {
 
 function supportChangeName() {
     function listenForUpdate(issueNumber) {
-        document.querySelector('.new-title').onkeypress = function (event) {
+        document.querySelector('.new-title').onkeypress = async function(event) {
             if (event.keyCode === 13 || event.which === 13) {
-                let gitlabToken = browser.storage.sync.get('gitlabToken')
-                gitlabToken.then((res) => {
-                    console.log(`Token retrieved: ${res.gitlabToken}`)
-
-                    if (!res) throw Error('Token invalid')
-                    const projectId = document.querySelector('#search_project_id').getAttribute('value')
-                    const newName = document.querySelector('.new-title').innerText
-
-                    updateIssueName(projectId, issueNumber, newName, res.gitlabToken)
-                })
-
                 event.preventDefault()
+
+                let res = await browser.storage.sync.get('gitlabToken')
+                let gitlabToken = res.gitlabToken
+                console.log(`Token retrieved: ${gitlabToken}`)
+
+                if (!res) throw Error('Token invalid')
+                const projectId = document.querySelector('#search_project_id').getAttribute('value')
+                const newName = document.querySelector('.new-title').innerText
+
+                updateIssueName(projectId, issueNumber, newName, gitlabToken)
             }
         }
     }
 
-    let targetNode = document.querySelector('.right-sidebar .issuable-header-text span')
+    let span = document.querySelector('.right-sidebar .issuable-header-text span')
     let observer = new MutationObserver(function () {
-        const isVisible = targetNode.style.display != 'none'
-        console.log(`Target node is shown: ${isVisible}`)
+        const isVisible = span.style.display != 'none'
+        console.log(`Sidebar is shown: ${isVisible}`)
         const issueName = document.querySelector('.is-active.board-card .board-card-header').textContent.trim()
         console.log(issueName)
         let originalTitle = document.querySelector('.right-sidebar .issuable-header-text strong')
@@ -60,7 +61,7 @@ function supportChangeName() {
 
         listenForUpdate(issueNumber)
     })
-    observer.observe(targetNode, {
+    observer.observe(span, {
         childList: true,
         characterData: true,
         subtree: true,
