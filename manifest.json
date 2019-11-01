@@ -29,7 +29,10 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*.gitlab.com/*/boards/*"],
+      "matches": [
+        "*://*.gitlab.com/*/boards/*", 
+        "*://*.gitlab.com/*/boards"
+      ],
       "js": ["gitlab.js"]
     }
   ]
