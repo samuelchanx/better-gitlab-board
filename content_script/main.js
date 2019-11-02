@@ -8,7 +8,7 @@ function updateIssueName(projectId, issueNumber, newName, privateToken) {
         if (this.readyState === 4) {
             console.log(this.responseText)
             let issue = Array.from(document.querySelectorAll('.board-card .board-card-number')).filter(item => item.textContent.trim().replace('#', '') === issueNumber)
-            issue[0].closest('.board-card').querySelector('.board-card-header').textContent = newName
+            issue[0].closest('.board-card').querySelector('.board-card-header a').textContent = newName
         }
     })
 
