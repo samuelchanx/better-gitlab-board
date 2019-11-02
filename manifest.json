@@ -8,6 +8,7 @@
     "48": "icons/border-48.png"
   },
   "browser_action": {
+    "default_title": "Better Gitlab Board",
     "browser_style": true,
     "default_popup": "popup/input_token.html",
     "default_icon": {
@@ -30,7 +31,10 @@
         "*://*.gitlab.com/*/boards/*", 
         "*://*.gitlab.com/*/boards"
       ],
-      "js": ["gitlab.js"]
+      "js": ["content_script/index.js"]
     }
+  ],
+  "web_accessible_resources": [
+    "content_script/main.js"
   ]
 }
