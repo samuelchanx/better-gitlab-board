@@ -32,12 +32,9 @@
         "*://*.gitlab.com/*/boards"
       ],
       "js": [
-        "helpers/storage.js",
+        "content_script/storage.js",
         "content_script/main.js"
       ]
     }
-  ],
-  "web_accessible_resources": [
-    "content_script/main.js"
   ]
 }

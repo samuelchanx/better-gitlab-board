@@ -1,17 +1,15 @@
-function getBrowser() {
-    if (typeof chrome !== "undefined") {
-        if (typeof browser !== "undefined") {
-            return "Firefox";
-        } else {
-            return "Chrome";
-        }
-    } else {
-        return "Edge";
-    }
-}
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 const gitlabToken = 'gitlabToken'
 
-export default function loadToken() {
+function getBrowser() {
+    if (typeof chrome !== "undefined") {
+        if (typeof browser !== "undefined") return "Firefox"
+        else return "Chrome"
+    } else { return "Edge" }
+}
+
+function loadToken() {
     if (getBrowser() === 'Firefox') {
         return browser.storage.sync.get(gitlabToken)
     } else {
@@ -23,7 +21,7 @@ export default function loadToken() {
     }
 }
 
-export default function saveToken(token) {
+function saveToken(token) {
     if (getBrowser() === 'Firefox') {
         return browser.storage.sync.set({
             gitlabToken: token
