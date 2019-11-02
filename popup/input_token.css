@@ -1,17 +1,12 @@
 html, body {
-    width: 350px;
-    margin: 4px;
+    width: 300px;
 }
 
-.page-choice {
-    width: 100%;
-    padding: 4px;
-    font-size: 1.5em;
+#token-input {
+    width: 90%;
+    margin-right: 10px;
+}
+
+.center {
     text-align: center;
-    cursor: pointer;
 }
-  
-.page-choice:hover {
-    background-color: #CFF2F2;
-}
-
