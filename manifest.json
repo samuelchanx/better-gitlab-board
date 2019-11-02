@@ -1,9 +1,9 @@
 {
-  "description": "Adds a solid red border to all webpages matching mozilla.org. See https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Examples#borderify",
+  "description": "This add-on adds function of editing Gitlab board issue name right in the same page, without needing to open new page. It uses the personal access token of each user.",
   "manifest_version": 2,
   "name": "Better Gitlab Board",
   "version": "1.0",
-  "homepage_url": "https://github.com/mdn/webextensions-examples/tree/master/borderify",
+  "homepage_url": "https://gitlab.com/c.samuel/better-gitlab-board",
   "icons": {
     "48": "icons/icon-48.png"
   },
