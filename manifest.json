@@ -19,7 +19,7 @@
   "permissions": ["storage"],
   "browser_specific_settings": {
     "gecko": {
-      "id": "samuelchan@void.com.hk"
+      "id": "cdf91ac1-4039-4dde-84a5-cf00f0dcac1f"
     },
     "edge": {
       "browser_action_next_to_addressbar": true
