@@ -1,0 +1,24 @@
+{
+  "name": "bettergitlabboard",
+  "version": "1.0.0",
+  "description": "This add-on adds function of editing Gitlab board issue right in the same page, without needing to open new page. It uses the personal access token of each user.",
+  "main": "content_script.js",
+  "dependencies": {},
+  "devDependencies": {
+    "babel-eslint": "^10.0.3",
+    "eslint": "^6.6.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/c.samuel/better-gitlab-board.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/c.samuel/better-gitlab-board/issues"
+  },
+  "homepage": "https://gitlab.com/c.samuel/better-gitlab-board#readme"
+}

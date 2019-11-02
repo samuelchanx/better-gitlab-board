@@ -1,0 +1,12 @@
+html, body {
+    width: 300px;
+}
+
+#token-input {
+    width: 90%;
+    margin-right: 10px;
+}
+
+.center {
+    text-align: center;
+}
