@@ -31,7 +31,10 @@
         "*://*.gitlab.com/*/boards/*", 
         "*://*.gitlab.com/*/boards"
       ],
-      "js": ["content_script/index.js"]
+      "js": [
+        "helpers/storage.js",
+        "content_script/main.js"
+      ]
     }
   ],
   "web_accessible_resources": [
