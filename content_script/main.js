@@ -1,3 +1,5 @@
+import { loadToken, saveToken } from '../helpers/storage.js'
+
 function updateIssueName(projectId, issueNumber, newName, privateToken) {
     let data = null
 

@@ -8,6 +8,7 @@
     "48": "icons/border-48.png"
   },
   "browser_action": {
+    "default_title": "Better Gitlab Board",
     "browser_style": true,
     "default_popup": "popup/input_token.html",
     "default_icon": {
@@ -16,9 +17,6 @@
     }
   },
   "permissions": ["storage"],
-  "background": {
-    "scripts": ["background.js"]
-  },
   "browser_specific_settings": {
     "gecko": {
       "id": "samuelchan@void.com.hk"
@@ -33,7 +31,13 @@
         "*://*.gitlab.com/*/boards/*", 
         "*://*.gitlab.com/*/boards"
       ],
-      "js": ["gitlab.js"]
+      "js": [
+        "helpers/storage.js",
+        "content_script/main.js"
+      ]
     }
+  ],
+  "web_accessible_resources": [
+    "content_script/main.js"
   ]
 }
