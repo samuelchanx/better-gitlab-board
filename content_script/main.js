@@ -1,5 +1,3 @@
-import { loadToken, saveToken } from '../helpers/storage.js'
-
 function updateIssueName(projectId, issueNumber, newName, privateToken) {
     let data = null
 
@@ -27,11 +25,11 @@ function supportChangeName() {
             if (event.keyCode === 13 || event.which === 13) {
                 event.preventDefault()
 
-                let res = await browser.storage.sync.get('gitlabToken')
-                let gitlabToken = res.gitlabToken
+                // eslint-disable-next-line no-undef
+                let { gitlabToken } = await loadToken()
                 console.log(`Token retrieved: ${gitlabToken}`)
 
-                if (!res) throw Error('Token invalid')
+                if (!gitlabToken) throw Error('Token invalid')
                 const projectId = document.querySelector('#search_project_id').getAttribute('value')
                 const newName = document.querySelector('.new-title').innerText
 
@@ -42,9 +40,10 @@ function supportChangeName() {
 
     let span = document.querySelector('.right-sidebar .issuable-header-text span')
     let observer = new MutationObserver(function () {
-        const isVisible = span.style.display != 'none'
-        console.log(`Sidebar is shown: ${isVisible}`)
-        const issueName = document.querySelector('.is-active.board-card .board-card-header').textContent.trim()
+        const activeIssueElem = document.querySelector('.is-active.board-card .board-card-header')
+        if (!activeIssueElem) return
+
+        const issueName = activeIssueElem.textContent.trim()
         console.log(issueName)
         let originalTitle = document.querySelector('.right-sidebar .issuable-header-text strong')
         originalTitle.style.display = 'none'
