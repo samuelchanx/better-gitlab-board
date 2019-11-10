@@ -13,6 +13,11 @@ This add-on adds function of editing Gitlab board issue name right in the same p
 
 ![update issue name demo](https://i.imgur.com/smbllbg.png "update issue name demo")
 
+## How to download
+
+- Available on [Firefox Addon](https://addons.mozilla.org/en-US/firefox/addon/gitlab-board-helper/)
+- Chrome extension to be published
+
 ## Future TODOs
 
 - [ ] Load issue description and render the markdown preview on sidebar
