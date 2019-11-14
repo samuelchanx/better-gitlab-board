@@ -59,7 +59,7 @@ function supportChangeName() {
         let issueNumber = document.querySelector('.right-sidebar .issuable-header-text span').innerText.replace('#', '')
         let projectIdRaw = activeIssueElem.querySelector('.board-card-title a').getAttribute('href')
         const projectId = /(?=[^\/])(.+)(?=\/issues)/g.exec(projectIdRaw)[0]
-        listenForUpdate(projectId, issueNumber)
+        listenForUpdate(projectId, issueNumber.replace(/[^0-9]/g, ''))
     })
     observer.observe(span, {
         childList: true,
