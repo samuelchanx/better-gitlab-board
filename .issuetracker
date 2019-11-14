@@ -1,0 +1,7 @@
+# Integration with Issue Tracker
+#
+# (note that '\' need to be escaped).
+
+[issuetracker "Gitlab Issue Tracker Rule"]
+  regex = "#(\\d*)"
+  url = "https://gitlab.com/samuelchanx/better-gitlab-board/issues/$1"
