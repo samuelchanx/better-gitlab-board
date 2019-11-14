@@ -9,16 +9,17 @@
     "eslint": "^6.6.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "zip release.zip -r icons manifest.json content_script popup"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@gitlab.com/c.samuel/better-gitlab-board.git"
+    "url": "git+ssh://git@gitlab.com/samuelchanx/better-gitlab-board.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://gitlab.com/c.samuel/better-gitlab-board/issues"
+    "url": "https://gitlab.com/samuelchanx/better-gitlab-board/issues"
   },
-  "homepage": "https://gitlab.com/c.samuel/better-gitlab-board#readme"
+  "homepage": "https://gitlab.com/samuelchanx/better-gitlab-board#readme"
 }
