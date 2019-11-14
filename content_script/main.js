@@ -12,7 +12,7 @@ function updateIssueName(projectId, issueNumber, newName, privateToken) {
         }
     })
 
-    xhr.open("PUT", `https://gitlab.com/api/v4/projects/${projectId}/issues/${issueNumber}?title=${encodeURIComponent(newName)}`)
+    xhr.open("PUT", `https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/issues/${issueNumber}?title=${encodeURIComponent(newName)}`)
     xhr.setRequestHeader("PRIVATE-TOKEN", privateToken)
     xhr.setRequestHeader("cache-control", "no-cache")
 
@@ -20,7 +20,7 @@ function updateIssueName(projectId, issueNumber, newName, privateToken) {
 }
 
 function supportChangeName() {
-    function listenForUpdate(issueNumber) {
+    function listenForUpdate(projectId, issueNumber) {
         document.querySelector('.new-title').onkeypress = async function(event) {
             if (event.keyCode === 13 || event.which === 13) {
                 event.preventDefault()
@@ -30,14 +30,13 @@ function supportChangeName() {
                 console.log(`Token retrieved: ${gitlabToken}`)
 
                 if (!gitlabToken) throw Error('Token invalid')
-                const projectId = document.querySelector('#search_project_id').getAttribute('value')
                 const newName = document.querySelector('.new-title').innerText
 
                 updateIssueName(projectId, issueNumber, newName, gitlabToken)
             }
         }
     }
-
+    
     let span = document.querySelector('.right-sidebar .issuable-header-text span')
     let observer = new MutationObserver(function () {
         const activeIssueElem = document.querySelector('.is-active.board-card .board-card-header')
@@ -58,8 +57,9 @@ function supportChangeName() {
         }
 
         let issueNumber = document.querySelector('.right-sidebar .issuable-header-text span').innerText.replace('#', '')
-
-        listenForUpdate(issueNumber)
+        let projectIdRaw = activeIssueElem.querySelector('.board-card-title a').getAttribute('href')
+        const projectId = /(?=[^\/])(.+)(?=\/issues)/g.exec(projectIdRaw)[0]
+        listenForUpdate(projectId, issueNumber.replace(/[^0-9]/g, ''))
     })
     observer.observe(span, {
         childList: true,
