@@ -89,12 +89,7 @@ async function loadIssueDescription(projectId, issueNumber) {
         if (doc.querySelector('div').hasChildNodes()) {
             let array = Array.from(doc.querySelector('div').children).map(elem => elem.outerHTML)
             
-            const toggleBtn = `<button data-toggle="collapse" aria-expanded="false" aria-controls="collapseDescription" href="#collapseDescription" class="collapsed btn-link bold">
-            Toggle expand
-            <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 426.667 426.667" style="enable-background:new 0 0 426.667 426.667;" xml:space="preserve" width="14">
-            <g><g><path d="M213.333,0C95.467,0,0,95.467,0,213.333s95.467,213.333,213.333,213.333S426.667,331.2,426.667,213.333S331.2,0,213.333,0
-                        z M213.333,384c-94.293,0-170.667-76.373-170.667-170.667S119.04,42.667,213.333,42.667S384,119.04,384,213.333
-                        S307.627,384,213.333,384z"></path></g></g></svg></button>`
+            const toggleBtn = `<button data-toggle="collapse" aria-expanded="false" aria-controls="collapseDescription" href="#collapseDescription" class="collapsed btn-link bold" style="color: blueviolet;"> >> show/hide</button>`
             descriptionHtml = array.slice(0, splitIndex).concat([
                 `<div id="collapseDescription" class="collapse">`, 
                 array.slice(splitIndex).reduce((a, b) => a + b), 
@@ -106,21 +101,39 @@ async function loadIssueDescription(projectId, issueNumber) {
         return `
         <div class="block new-description">
             <div data-qa-selector="assignee_title">
-                <img src="${issue.authorAvatar}" class="header-user-avatar qa-user-avatar js-sidebar-dropdown-toggle edit-link" width="40" height="40">${issue.authorUsername}<div>${issue.createDate}</div></div>  
+                <img src="${issue.authorAvatar}" class="header-user-avatar qa-user-avatar js-sidebar-dropdown-toggle edit-link" width="40" height="40">${issue.authorUsername}<div>Created on ${new Date(issue.createDate).toLocaleDateString()}</div></div>  
                 <div class="value"> <div class="value hide-collapsed" style="margin-top: 10px;"><span class="js-vue-md-preview md md-preview-holder no-value">${descriptionHtml}</span></div>
             </div>
         </div>`
     }
 
+    function updateDescriptionHtml(html) {
+        const assigneeNode = document.querySelector('.right-sidebar .block.assignee')
+        let newDescription = document.querySelector('div.block.new-description')
+        if (newDescription) {
+            newDescription.innerHTML = html
+        } else {
+            newDescription = document.createElement('div')
+            newDescription.innerHTML = html
+            assigneeNode.parentNode.insertBefore(newDescription, assigneeNode.nextSibling)
+        }
+    }
+
     // eslint-disable-next-line no-undef
     const { gitlabToken } = await loadToken()
+    const issueKey = `${projectId}/${issueNumber}`
+
+    // Load cache
+    const cache = issueData[issueKey]
+    if (cache) { updateDescriptionHtml(getDescriptionHtml(cache)) }
+
     const { result, error } = await getIssue(projectId, issueNumber, gitlabToken)
     if (error) {
         console.log(error)
         return
     }
 
-    issueData[issueNumber] = {
+    const newData = {
         title: result.title,
         description: result.description,
         createDate: result.created_at,
@@ -128,14 +141,8 @@ async function loadIssueDescription(projectId, issueNumber) {
         authorAvatar: result.author.avatar_url
     }
 
-    const assigneeNode = document.querySelector('.right-sidebar .block.assignee')
-    let newDescription = document.querySelector('div.block.new-description')
-    if (newDescription) {
-        newDescription.innerHTML = getDescriptionHtml(issueData[issueNumber])
-    } else {
-        newDescription = document.createElement('div')
-        newDescription.innerHTML = getDescriptionHtml(issueData[issueNumber])
-        assigneeNode.parentNode.insertBefore(newDescription, assigneeNode.nextSibling)
+    if (newData != cache) {
+        updateDescriptionHtml(getDescriptionHtml(newData))
     }
 }
 
