@@ -18,13 +18,13 @@ This add-on adds function of editing Gitlab board issue name right in the same p
 ## How to download
 
 - Available on [Firefox Addon](https://addons.mozilla.org/en-US/firefox/addon/gitlab-board-helper/)
-- Chrome extension to be published
+- Chrome extension to be published soon (under review)
 
 ## Future TODOs
 
-- [ ] Load issue description and render the markdown preview on sidebar
 - [ ] Update issue description on sidebar
 - [ ] Add dark mode for Gitlab
+- More on https://gitlab.com/samuelchanx/better-gitlab-board/-/boards
 
 ## How to support 
 
