@@ -33,6 +33,7 @@
       ],
       "js": [
         "content_script/storage.js",
+        "content_script/showdown.min.js",
         "content_script/main.js"
       ]
     }
