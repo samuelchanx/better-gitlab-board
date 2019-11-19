@@ -66,13 +66,48 @@ function listenForIssueNameUpdate(projectId, issueNumber) {
     }
 }
 
-async function loadIssueName(projectId, issueNumber) {
+async function loadIssueDescription(projectId, issueNumber) {
     function getDescriptionHtml(issue) {
+        const converter = new showdown.Converter({
+            ghCompatibleHeaderId: true,
+            simpleLineBreaks: true,
+            ghMentions: true
+        })
+        
+        const splitIndex = 3
+
+        // Replace relative link with absolute
+        const description = issue.description ? issue.description.replace(/\(([\\/a-zA-Z0-9.]*)\)/, `(https://gitlab.com/${projectId}$1)`) : ''
+        converter.setFlavor('original')
+        const markdownHtml = converter.makeHtml(description)
+
+        // Toggle to collapse button
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(`<div>${markdownHtml}</div>`, 'text/html');
+
+        let descriptionHtml = ''
+        if (doc.querySelector('div').hasChildNodes()) {
+            let array = Array.from(doc.querySelector('div').children).map(elem => elem.outerHTML)
+            
+            const toggleBtn = `<button data-toggle="collapse" aria-expanded="false" aria-controls="collapseDescription" href="#collapseDescription" class="collapsed btn-link bold">
+            Toggle expand
+            <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 426.667 426.667" style="enable-background:new 0 0 426.667 426.667;" xml:space="preserve" width="14">
+            <g><g><path d="M213.333,0C95.467,0,0,95.467,0,213.333s95.467,213.333,213.333,213.333S426.667,331.2,426.667,213.333S331.2,0,213.333,0
+                        z M213.333,384c-94.293,0-170.667-76.373-170.667-170.667S119.04,42.667,213.333,42.667S384,119.04,384,213.333
+                        S307.627,384,213.333,384z"></path></g></g></svg></button>`
+            descriptionHtml = array.slice(0, splitIndex).concat([
+                `<div id="collapseDescription" class="collapse">`, 
+                array.slice(splitIndex).reduce((a, b) => a + b), 
+                `</div>`, 
+                toggleBtn
+            ]).reduce((a, b) => a + b)
+        }
+        
         return `
         <div class="block new-description">
             <div data-qa-selector="assignee_title">
                 <img src="${issue.authorAvatar}" class="header-user-avatar qa-user-avatar js-sidebar-dropdown-toggle edit-link" width="40" height="40">${issue.authorUsername}<div>${issue.createDate}</div></div>  
-                <div class="value"> <div class="value hide-collapsed"><span class="assign-yourself no-value qa-assign-yourself">${issue.description}</span></div>
+                <div class="value"> <div class="value hide-collapsed" style="margin-top: 10px;"><span class="js-vue-md-preview md md-preview-holder no-value">${descriptionHtml}</span></div>
             </div>
         </div>`
     }
@@ -128,7 +163,7 @@ function supportChangeName() {
         let projectIdRaw = activeIssueElem.querySelector('.board-card-title a').getAttribute('href')
         const projectId = /(?=[^\/])(.+)(?=\/issues)/g.exec(projectIdRaw)[0]
         
-        loadIssueName(projectId, issueNumber)
+        loadIssueDescription(projectId, issueNumber)
         listenForIssueNameUpdate(projectId, issueNumber.replace(/[^0-9]/g, ''))
     })
     observer.observe(span, {
