@@ -49,24 +49,62 @@ function updateIssueName(projectId, issueNumber, newName, privateToken) {
     xhr.send(data)
 }
 
-function supportChangeName() {
-    function listenForUpdate(projectId, issueNumber) {
-        document.querySelector('.new-title').onkeypress = async function(event) {
-            if (event.keyCode === 13 || event.which === 13) {
-                event.preventDefault()
+function listenForIssueNameUpdate(projectId, issueNumber) {
+    document.querySelector('.new-title').onkeypress = async function(event) {
+        if (event.keyCode === 13 || event.which === 13) {
+            event.preventDefault()
 
-                // eslint-disable-next-line no-undef
-                let { gitlabToken } = await loadToken()
-                console.log(`Token retrieved: ${gitlabToken}`)
+            // eslint-disable-next-line no-undef
+            let { gitlabToken } = await loadToken()
+            console.log(`Token retrieved: ${gitlabToken}`)
 
-                if (!gitlabToken) throw Error('Token invalid')
-                const newName = document.querySelector('.new-title').innerText
+            if (!gitlabToken) throw Error('Token invalid')
+            const newName = document.querySelector('.new-title').innerText
 
-                updateIssueName(projectId, issueNumber, newName, gitlabToken)
-            }
+            updateIssueName(projectId, issueNumber, newName, gitlabToken)
         }
     }
-    
+}
+
+async function loadIssueName(projectId, issueNumber) {
+    function getDescriptionHtml(issue) {
+        return `
+        <div class="block new-description">
+            <div data-qa-selector="assignee_title">
+                <img src="${issue.authorAvatar}" class="header-user-avatar qa-user-avatar js-sidebar-dropdown-toggle edit-link" width="40" height="40">${issue.authorUsername}<div>${issue.createDate}</div></div>  
+                <div class="value"> <div class="value hide-collapsed"><span class="assign-yourself no-value qa-assign-yourself">${issue.description}</span></div>
+            </div>
+        </div>`
+    }
+
+    // eslint-disable-next-line no-undef
+    const { gitlabToken } = await loadToken()
+    const { result, error } = await getIssue(projectId, issueNumber, gitlabToken)
+    if (error) {
+        console.log(error)
+        return
+    }
+
+    issueData[issueNumber] = {
+        title: result.title,
+        description: result.description,
+        createDate: result.created_at,
+        authorUsername: result.author.username,
+        authorAvatar: result.author.avatar_url
+    }
+
+    const assigneeNode = document.querySelector('.right-sidebar .block.assignee')
+    let newDescription = document.querySelector('div.block.new-description')
+    if (newDescription) {
+        newDescription.innerHTML = getDescriptionHtml(issueData[issueNumber])
+    } else {
+        newDescription = document.createElement('div')
+        newDescription.innerHTML = getDescriptionHtml(issueData[issueNumber])
+        assigneeNode.parentNode.insertBefore(newDescription, assigneeNode.nextSibling)
+    }
+}
+
+function supportChangeName() {
     let span = document.querySelector('.right-sidebar .issuable-header-text span')
     let observer = new MutationObserver(function () {
         const activeIssueElem = document.querySelector('.is-active.board-card .board-card-header')
@@ -89,7 +127,9 @@ function supportChangeName() {
         let issueNumber = document.querySelector('.right-sidebar .issuable-header-text span').innerText.replace('#', '')
         let projectIdRaw = activeIssueElem.querySelector('.board-card-title a').getAttribute('href')
         const projectId = /(?=[^\/])(.+)(?=\/issues)/g.exec(projectIdRaw)[0]
-        listenForUpdate(projectId, issueNumber.replace(/[^0-9]/g, ''))
+        
+        loadIssueName(projectId, issueNumber)
+        listenForIssueNameUpdate(projectId, issueNumber.replace(/[^0-9]/g, ''))
     })
     observer.observe(span, {
         childList: true,
