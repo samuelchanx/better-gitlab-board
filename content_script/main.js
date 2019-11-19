@@ -1,3 +1,33 @@
+let issueData = {}
+
+function getIssue(projectId, issueNumber, privateToken) {
+    return new Promise(function(resolve, reject) {
+        let xhr = new XMLHttpRequest()
+        xhr.withCredentials = true
+
+        xhr.open("GET", `https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/issues/${issueNumber}`)
+        xhr.setRequestHeader("PRIVATE-TOKEN", privateToken)
+        xhr.setRequestHeader("cache-control", "no-cache")
+        xhr.onload = function () {
+            if (this.status >= 200 && this.status < 300) {
+                console.log(xhr.response)
+                resolve({result: JSON.parse(xhr.response)})
+            } else {
+                reject({
+                    status: this.status,
+                    statusText: xhr.statusText
+                })
+            }
+        }
+        xhr.onerror = function () {
+            reject({
+                error: xhr.statusText
+            })
+        }
+        xhr.send()
+    })
+}
+
 function updateIssueName(projectId, issueNumber, newName, privateToken) {
     let data = null
 
