@@ -5,13 +5,15 @@ This add-on adds function of editing Gitlab board issue name right in the same p
 ## What can this extension do?
 
 - Update issue name right on the Gitlab board
+- Load issue description directly from gitlab board
 
 1. Click the extension icon, input your personal access token generated from Gitlab
 2. Navigate to any Gitlab issue board
-3. Click on any issue, update the issue name from the sidebar
-4. Boom! The issue name should update automatically
 
-![update issue name demo](https://i.imgur.com/smbllbg.png "update issue name demo")
+|Description|Screenshot|
+|--|--|
+|update issue name|![update issue name demo](https://i.imgur.com/smbllbg.png)|
+|load issue description|![load issue description demo](https://i.imgur.com/AaesC6T.png)|
 
 ## How to download
 
@@ -33,6 +35,12 @@ This add-on adds function of editing Gitlab board issue name right in the same p
 <a href="https://www.buymeacoffee.com/samuelchanx" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 28px !important;width: 100px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
 ## Release Notes
+
+v1.2
+- Support loading issue description (Related to https://gitlab.com/samuelchanx/better-gitlab-board/issues/10)
+
+v1.1.1
+- Support Gitlab group level issue board (Related to https://gitlab.com/samuelchanx/better-gitlab-board/issues/9)
 
 v1.0
 - Support issue name update
