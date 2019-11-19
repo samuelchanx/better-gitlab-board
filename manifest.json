@@ -2,7 +2,7 @@
   "description": "This add-on adds function of editing Gitlab board issue name right on the sidebar.",
   "manifest_version": 2,
   "name": "Better Gitlab Board",
-  "version": "1.1.1",
+  "version": "1.2",
   "homepage_url": "https://gitlab.com/samuelchanx/better-gitlab-board",
   "icons": {
     "48": "icons/icon-48.png"
@@ -33,6 +33,7 @@
       ],
       "js": [
         "content_script/storage.js",
+        "content_script/showdown.min.js",
         "content_script/main.js"
       ]
     }
