@@ -140,6 +140,7 @@ async function loadIssueDescription(projectId, issueNumber) {
 
     if (newData != cache) {
         updateDescriptionHtml(getDescriptionHtml(newData))
+        issueData[issueKey] = newData
     }
 }
 
