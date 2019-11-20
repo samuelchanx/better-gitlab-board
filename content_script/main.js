@@ -166,12 +166,12 @@ function supportChangeName() {
             originalTitle.parentNode.insertBefore(newTitle, originalTitle.nextSibling)
         }
 
-        let issueNumber = document.querySelector('.right-sidebar .issuable-header-text span').innerText.replace('#', '')
+        let issueNumber = document.querySelector('.right-sidebar .issuable-header-text span').innerText.replace(/[^0-9]/g, '')
         let projectIdRaw = activeIssueElem.querySelector('.board-card-title a').getAttribute('href')
         const projectId = /(?=[^\/])(.+)(?=\/issues)/g.exec(projectIdRaw)[0]
         
         loadIssueDescription(projectId, issueNumber)
-        listenForIssueNameUpdate(projectId, issueNumber.replace(/[^0-9]/g, ''))
+        listenForIssueNameUpdate(projectId, issueNumber)
     })
     observer.observe(span, {
         childList: true,
