@@ -80,24 +80,22 @@ async function loadIssueDescription(projectId, issueNumber) {
         const description = issue.description ? issue.description.replace(/\(([\\/a-zA-Z0-9.]*)\)/, `(https://gitlab.com/${projectId}$1)`) : ''
         converter.setFlavor('original')
         const markdownHtml = converter.makeHtml(description)
-
+        let descriptionHtml = markdownHtml
+        
         // Toggle to collapse button
         const parser = new DOMParser();
         const doc = parser.parseFromString(`<div>${markdownHtml}</div>`, 'text/html');
-
-        let descriptionHtml = ''
-        if (doc.querySelector('div').hasChildNodes()) {
-            let array = Array.from(doc.querySelector('div').children).map(elem => elem.outerHTML)
-            
+        let markdownElems = Array.from(doc.querySelector('div').children).map(elem => elem.outerHTML)
+        if (markdownElems.length > splitIndex) {
             const toggleBtn = `<button data-toggle="collapse" aria-expanded="false" aria-controls="collapseDescription" href="#collapseDescription" class="collapsed btn-link bold" style="color: blueviolet;"> >> show/hide</button>`
-            descriptionHtml = array.slice(0, splitIndex).concat([
+            descriptionHtml = markdownElems.slice(0, splitIndex).concat([
                 `<div id="collapseDescription" class="collapse">`, 
-                array.slice(splitIndex).length !== 0 ? array.slice(splitIndex).reduce((a, b) => a + b) : '',
+                markdownElems.slice(splitIndex).length !== 0 ? markdownElems.slice(splitIndex).reduce((a, b) => a + b) : '',
                 `</div>`, 
                 toggleBtn
             ]).reduce((a, b) => a + b)
         }
-        
+    
         return `
             <div data-qa-selector="assignee_title">
                 <img src="${issue.authorAvatar}" class="header-user-avatar qa-user-avatar js-sidebar-dropdown-toggle edit-link" width="40" height="40">${issue.authorUsername}<div>Created on ${new Date(issue.createDate).toLocaleDateString()}</div></div>  
