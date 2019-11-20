@@ -99,12 +99,10 @@ async function loadIssueDescription(projectId, issueNumber) {
         }
         
         return `
-        <div class="block new-description">
             <div data-qa-selector="assignee_title">
                 <img src="${issue.authorAvatar}" class="header-user-avatar qa-user-avatar js-sidebar-dropdown-toggle edit-link" width="40" height="40">${issue.authorUsername}<div>Created on ${new Date(issue.createDate).toLocaleDateString()}</div></div>  
                 <div class="value"> <div class="value hide-collapsed" style="margin-top: 10px;"><span class="js-vue-md-preview md md-preview-holder no-value">${descriptionHtml}</span></div>
-            </div>
-        </div>`
+            </div>`
     }
 
     function updateDescriptionHtml(html) {
@@ -114,6 +112,7 @@ async function loadIssueDescription(projectId, issueNumber) {
             newDescription.innerHTML = html
         } else {
             newDescription = document.createElement('div')
+            newDescription.className = 'block new-description'
             newDescription.innerHTML = html
             assigneeNode.parentNode.insertBefore(newDescription, assigneeNode.nextSibling)
         }
