@@ -92,7 +92,7 @@ async function loadIssueDescription(projectId, issueNumber) {
             const toggleBtn = `<button data-toggle="collapse" aria-expanded="false" aria-controls="collapseDescription" href="#collapseDescription" class="collapsed btn-link bold" style="color: blueviolet;"> >> show/hide</button>`
             descriptionHtml = array.slice(0, splitIndex).concat([
                 `<div id="collapseDescription" class="collapse">`, 
-                array.slice(splitIndex).reduce((a, b) => a + b), 
+                array.slice(splitIndex).length !== 0 ? array.slice(splitIndex).reduce((a, b) => a + b) : '',
                 `</div>`, 
                 toggleBtn
             ]).reduce((a, b) => a + b)
