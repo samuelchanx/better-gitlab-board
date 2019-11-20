@@ -112,7 +112,7 @@ async function loadIssueDescription(projectId, issueNumber) {
             newDescription = document.createElement('div')
             newDescription.className = 'block new-description'
             newDescription.innerHTML = html
-            assigneeNode.parentNode.insertBefore(newDescription, assigneeNode.nextSibling)
+            assigneeNode.parentNode.insertBefore(newDescription, assigneeNode)
         }
     }
 
