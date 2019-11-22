@@ -29,24 +29,27 @@ function getIssue(projectId, issueNumber, privateToken) {
 }
 
 function updateIssueName(projectId, issueNumber, newName, privateToken) {
-    let data = null
-
     let xhr = new XMLHttpRequest()
     xhr.withCredentials = true
-
-    xhr.addEventListener("readystatechange", function () {
-        if (this.readyState === 4) {
-            console.log(this.responseText)
-            let issue = Array.from(document.querySelectorAll('.board-card .board-card-number')).filter(item => item.textContent.trim().replace('#', '').includes(issueNumber))
-            issue[0].closest('.board-card').querySelector('.board-card-header a').textContent = newName
-        }
-    })
 
     xhr.open("PUT", `https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/issues/${issueNumber}?title=${encodeURIComponent(newName)}`)
     xhr.setRequestHeader("PRIVATE-TOKEN", privateToken)
     xhr.setRequestHeader("cache-control", "no-cache")
 
-    xhr.send(data)
+    xhr.onload = function () {
+        if (this.status >= 200 && this.status < 300) {
+            console.log(xhr.responseText)
+            let issue = Array.from(document.querySelectorAll('.board-card .board-card-number')).filter(item => item.textContent.trim().replace('#', '').includes(issueNumber))
+            issue[0].closest('.board-card').querySelector('.board-card-header a').textContent = newName
+        } else {
+            console.log(xhr.statusText)
+        }
+    }
+    xhr.onerror = function () {
+        console.log(xhr.statusText)
+    }
+
+    xhr.send()
 }
 
 function listenForIssueNameUpdate(projectId, issueNumber) {
@@ -80,31 +83,27 @@ async function loadIssueDescription(projectId, issueNumber) {
         const description = issue.description ? issue.description.replace(/\(([\\/a-zA-Z0-9.]*)\)/, `(https://gitlab.com/${projectId}$1)`) : ''
         converter.setFlavor('original')
         const markdownHtml = converter.makeHtml(description)
-
+        let descriptionHtml = markdownHtml
+        
         // Toggle to collapse button
         const parser = new DOMParser();
         const doc = parser.parseFromString(`<div>${markdownHtml}</div>`, 'text/html');
-
-        let descriptionHtml = ''
-        if (doc.querySelector('div').hasChildNodes()) {
-            let array = Array.from(doc.querySelector('div').children).map(elem => elem.outerHTML)
-            
+        let markdownElems = Array.from(doc.querySelector('div').children).map(elem => elem.outerHTML)
+        if (markdownElems.length > splitIndex) {
             const toggleBtn = `<button data-toggle="collapse" aria-expanded="false" aria-controls="collapseDescription" href="#collapseDescription" class="collapsed btn-link bold" style="color: blueviolet;"> >> show/hide</button>`
-            descriptionHtml = array.slice(0, splitIndex).concat([
+            descriptionHtml = markdownElems.slice(0, splitIndex).concat([
                 `<div id="collapseDescription" class="collapse">`, 
-                array.slice(splitIndex).reduce((a, b) => a + b), 
+                markdownElems.slice(splitIndex).length !== 0 ? markdownElems.slice(splitIndex).reduce((a, b) => a + b) : '',
                 `</div>`, 
                 toggleBtn
             ]).reduce((a, b) => a + b)
         }
-        
+    
         return `
-        <div class="block new-description">
             <div data-qa-selector="assignee_title">
                 <img src="${issue.authorAvatar}" class="header-user-avatar qa-user-avatar js-sidebar-dropdown-toggle edit-link" width="40" height="40">${issue.authorUsername}<div>Created on ${new Date(issue.createDate).toLocaleDateString()}</div></div>  
                 <div class="value"> <div class="value hide-collapsed" style="margin-top: 10px;"><span class="js-vue-md-preview md md-preview-holder no-value">${descriptionHtml}</span></div>
-            </div>
-        </div>`
+            </div>`
     }
 
     function updateDescriptionHtml(html) {
@@ -114,8 +113,9 @@ async function loadIssueDescription(projectId, issueNumber) {
             newDescription.innerHTML = html
         } else {
             newDescription = document.createElement('div')
+            newDescription.className = 'block new-description'
             newDescription.innerHTML = html
-            assigneeNode.parentNode.insertBefore(newDescription, assigneeNode.nextSibling)
+            assigneeNode.parentNode.insertBefore(newDescription, assigneeNode)
         }
     }
 
@@ -143,10 +143,11 @@ async function loadIssueDescription(projectId, issueNumber) {
 
     if (newData != cache) {
         updateDescriptionHtml(getDescriptionHtml(newData))
+        issueData[issueKey] = newData
     }
 }
 
-function supportChangeName() {
+function main() {
     let span = document.querySelector('.right-sidebar .issuable-header-text span')
     let observer = new MutationObserver(function () {
         const activeIssueElem = document.querySelector('.is-active.board-card .board-card-header')
@@ -166,12 +167,12 @@ function supportChangeName() {
             originalTitle.parentNode.insertBefore(newTitle, originalTitle.nextSibling)
         }
 
-        let issueNumber = document.querySelector('.right-sidebar .issuable-header-text span').innerText.replace('#', '')
+        let issueNumber = document.querySelector('.right-sidebar .issuable-header-text span').innerText.replace(/[^0-9]/g, '')
         let projectIdRaw = activeIssueElem.querySelector('.board-card-title a').getAttribute('href')
-        const projectId = /(?=[^\/])(.+)(?=\/issues)/g.exec(projectIdRaw)[0]
+        const projectId = /(?=[^/])(.+)(?=\/issues)/g.exec(projectIdRaw)[0]
         
         loadIssueDescription(projectId, issueNumber)
-        listenForIssueNameUpdate(projectId, issueNumber.replace(/[^0-9]/g, ''))
+        listenForIssueNameUpdate(projectId, issueNumber)
     })
     observer.observe(span, {
         childList: true,
@@ -181,8 +182,4 @@ function supportChangeName() {
     })
 }
 
-try {
-    supportChangeName()
-} catch (error) {
-    console.log(error)
-}
+main()
