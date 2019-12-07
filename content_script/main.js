@@ -1,55 +1,36 @@
 let issueData = {}
 
-function getIssue(projectId, issueNumber, privateToken) {
-    return new Promise(function(resolve, reject) {
-        let xhr = new XMLHttpRequest()
-        xhr.withCredentials = true
-
-        xhr.open("GET", `https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/issues/${issueNumber}`)
-        xhr.setRequestHeader("PRIVATE-TOKEN", privateToken)
-        xhr.setRequestHeader("cache-control", "no-cache")
-        xhr.onload = function () {
-            if (this.status >= 200 && this.status < 300) {
-                console.log(xhr.response)
-                resolve({result: JSON.parse(xhr.response)})
-            } else {
-                reject({
-                    status: this.status,
-                    statusText: xhr.statusText
-                })
-            }
+async function getIssue(projectId, issueNumber, privateToken) {
+    const response = await fetch(`https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/issues/${issueNumber}`, {
+        method: 'GET',
+        headers: {
+            'PRIVATE-TOKEN': privateToken,
+            'cache-control': 'no-cache'
         }
-        xhr.onerror = function () {
-            reject({
-                error: xhr.statusText
-            })
-        }
-        xhr.send()
     })
+    return response.json()
 }
 
-function updateIssueName(projectId, issueNumber, newName, privateToken) {
-    let xhr = new XMLHttpRequest()
-    xhr.withCredentials = true
-
-    xhr.open("PUT", `https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/issues/${issueNumber}?title=${encodeURIComponent(newName)}`)
-    xhr.setRequestHeader("PRIVATE-TOKEN", privateToken)
-    xhr.setRequestHeader("cache-control", "no-cache")
-
-    xhr.onload = function () {
-        if (this.status >= 200 && this.status < 300) {
-            console.log(xhr.responseText)
-            let issue = Array.from(document.querySelectorAll('.board-card .board-card-number')).filter(item => item.textContent.trim().replace('#', '').includes(issueNumber))
-            issue[0].closest('.board-card').querySelector('.board-card-header a').textContent = newName
-        } else {
-            console.log(xhr.statusText)
-        }
+async function updateIssueName(projectId, issueNumber, newName, privateToken) {
+    const response = await fetch(`https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/issues/${issueNumber}?title=${encodeURIComponent(newName)}`, {
+        method: 'PUT', // *GET, POST, PUT, DELETE, etc.
+        headers: {
+          'PRIVATE-TOKEN': privateToken,
+          'cache-control': 'no-cache'
+        },
+    })
+    if (response.ok) {
+        let issue = Array.from(document.querySelectorAll('.board-card-number-container'))
+                .filter(item => {
+                    const issuePath = item.querySelector('.board-issue-path')
+                    const cardNumberMatch = item.querySelector('.board-card-number').textContent.trim().replace(/[^0-9]/g, '') === issueNumber
+                    if (issuePath) return issuePath.textContent === projectId && cardNumberMatch
+                    else { return cardNumberMatch }
+                })
+        issue[0].closest('.board-card').querySelector('.board-card-header a').textContent = newName
+    } else {
+        throw response.error
     }
-    xhr.onerror = function () {
-        console.log(xhr.statusText)
-    }
-
-    xhr.send()
 }
 
 function listenForIssueNameUpdate(projectId, issueNumber) {
@@ -127,23 +108,23 @@ async function loadIssueDescription(projectId, issueNumber) {
     const cache = issueData[issueKey]
     if (cache) { updateDescriptionHtml(getDescriptionHtml(cache)) }
 
-    const { result, error } = await getIssue(projectId, issueNumber, gitlabToken)
-    if (error) {
-        console.log(error)
-        return
-    }
+    try {
+        const result = await getIssue(projectId, issueNumber, gitlabToken)
 
-    const newData = {
-        title: result.title,
-        description: result.description,
-        createDate: result.created_at,
-        authorUsername: result.author.username,
-        authorAvatar: result.author.avatar_url
-    }
+        const newData = {
+            title: result.title,
+            description: result.description,
+            createDate: result.created_at,
+            authorUsername: result.author.username,
+            authorAvatar: result.author.avatar_url
+        }
 
-    if (newData != cache) {
-        updateDescriptionHtml(getDescriptionHtml(newData))
-        issueData[issueKey] = newData
+        if (newData != cache) {
+            updateDescriptionHtml(getDescriptionHtml(newData))
+            issueData[issueKey] = newData
+        }       
+    } catch (e) {
+        console.log(e)
     }
 }
 
