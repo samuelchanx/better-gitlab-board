@@ -35,15 +35,57 @@ async function updateIssueName(projectId, issueNumber, newName, privateToken) {
   }
 }
 
+async function issueEstimate(projectId, issueNumber, estimation, privateToken) {
+  const response = await fetch(`https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/issues/${issueNumber}/time_estimate?duration=${encodeURIComponent(estimation)}`, {
+    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      'PRIVATE-TOKEN': privateToken,
+      'cache-control': 'no-cache'
+    }
+  })
+  console.log(await response.json())
+}
+
+async function issueEstimateReset(projectId, issueNumber, privateToken) {
+  const response = await fetch(`https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/issues/${issueNumber}/reset_time_estimate`, {
+    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      'PRIVATE-TOKEN': privateToken,
+      'cache-control': 'no-cache'
+    }
+  })
+  console.log(await response.json())
+}
+
+async function issueSpend(projectId, issueNumber, estimation, privateToken) {
+  const response = await fetch(`https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/issues/${issueNumber}/add_spent_time?duration=${encodeURIComponent(estimation)}`, {
+    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      'PRIVATE-TOKEN': privateToken,
+      'cache-control': 'no-cache'
+    }
+  })
+  console.log(await response.json())
+}
+
+async function issueSpendReset(projectId, issueNumber, privateToken) {
+  const response = await fetch(`https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/issues/${issueNumber}/reset_spent_time`, {
+    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      'PRIVATE-TOKEN': privateToken,
+      'cache-control': 'no-cache'
+    }
+  })
+  console.log(await response.json())
+}
+
 function listenForIssueNameUpdate(projectId, issueNumber) {
   document.querySelector('.new-title').onkeypress = async function (event) {
     if (event.keyCode === 13 || event.which === 13) {
       event.preventDefault()
 
       // eslint-disable-next-line no-undef
-      let {
-        gitlabToken
-      } = await loadToken()
+      let { gitlabToken } = await loadToken()
       console.log(`Token retrieved: ${gitlabToken}`)
 
       if (!gitlabToken) throw Error('Token invalid')
@@ -136,8 +178,65 @@ async function loadIssueDescription(projectId, issueNumber) {
   }
 }
 
-function listenForIssueTimeTrack() {
+function listenForIssueTimeTrack(projectId, issueNumber) {
+  const timeTrackSelector = '.right-sidebar .time-tracking .time-tracking-content'
+  const timeTrackEstimateHtml = `<div class="time-tracking-estimate">
+  <a href="#" class="estimate"><span>Estimate</span></a>
+  <a href="#" class="reset"><span>Reset </span></a>
+  <input type="search" id="" placeholder="e.g. 1h30m" autocomplete="off" class="time-tracking-estimate-input dropdown-input-field qa-dropdown-input-field hidden"></div>`
+  const timeTrackSpendHtml = `<div class="time-tracking-spend">
+  <a href="#" class="spend"><span>Spend</span></a>
+  <a href="#" class="reset"><span> Reset </span></a>
+  <input type="search" id="" placeholder="e.g. 1h30m" autocomplete="off" class="time-tracking-spend-input dropdown-input-field qa-dropdown-input-field hidden"></div>`
 
+  document.querySelector(timeTrackSelector).querySelectorAll('.time-tracking-estimate, .time-tracking-spend').forEach(e => e.remove())
+
+  document.querySelector(timeTrackSelector).insertAdjacentHTML('beforeend', timeTrackEstimateHtml)
+  document.querySelector(timeTrackSelector).insertAdjacentHTML('beforeend', timeTrackSpendHtml)
+
+  async function addListeners() {
+    // eslint-disable-next-line no-undef
+    let { gitlabToken } = await loadToken()
+
+    document.querySelector(timeTrackSelector).querySelectorAll('.estimate, .spend').forEach(elem => {
+      elem.addEventListener('click', function(e) {
+        e.target.closest('div').querySelector('input').classList.toggle('hidden')
+      })
+    })
+
+    document.querySelector(timeTrackSelector).querySelectorAll('.reset').forEach(e => {
+      e.addEventListener('click', async function(e) {
+        if (e.target.closest('div').classList.contains('time-tracking-estimate')) {
+          // reset estimate
+          console.log('reset estimate')
+          await issueEstimateReset(projectId, issueNumber, gitlabToken)
+        } else if (e.target.closest('div').classList.contains('time-tracking-spend')) {
+          // reset spend
+          console.log('reset spend')
+          await issueSpendReset(projectId, issueNumber, gitlabToken)
+        }
+      })
+    })
+
+    document.querySelector(timeTrackSelector).querySelectorAll('input').forEach(e => {
+      e.addEventListener('keypress', async function(e) {
+        if (!e) e = window.event;
+        var keyCode = e.keyCode || e.which;
+        if (keyCode === 13) {
+          if (e.target.classList.contains('time-tracking-estimate-input')) {
+            console.log('Estimate value: ', e.target.value)
+            await issueEstimate(projectId, issueNumber, e.target.value, gitlabToken)
+          } else if (e.target.classList.contains('time-tracking-spend-input')) {
+            console.log('Spend value: ', e.target.value)
+            await issueSpend(projectId, issueNumber, e.target.value, gitlabToken)
+          }
+          return false;
+        }
+      })
+    })
+  }
+
+  addListeners()
 }
 
 function main() {
