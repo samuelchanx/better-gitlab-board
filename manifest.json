@@ -29,7 +29,8 @@
     {
       "matches": [
         "*://*.gitlab.com/*/boards/*", 
-        "*://*.gitlab.com/*/boards"
+        "*://*.gitlab.com/*/boards",
+        "*://*.gitlab.com/*/boards*"
       ],
       "js": [
         "content_script/storage.js",
