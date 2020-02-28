@@ -35,6 +35,21 @@ async function updateIssueName(projectId, issueNumber, newName, privateToken) {
   }
 }
 
+async function updateIssueDescription(projectId, issueNumber, description, privateToken) {
+  const response = await fetch(`https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/issues/${issueNumber}?description=${encodeURIComponent(description)}`, {
+    method: 'PUT', // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      'PRIVATE-TOKEN': privateToken,
+      'cache-control': 'no-cache'
+    },
+  })
+  if (response.ok) {
+    console.log('OK updating description!')
+  } else {
+    throw response.error
+  }
+}
+
 async function issueEstimate(projectId, issueNumber, estimation, privateToken) {
   const response = await fetch(`https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/issues/${issueNumber}/time_estimate?duration=${encodeURIComponent(estimation)}`, {
     method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -97,12 +112,14 @@ function listenForIssueNameUpdate(projectId, issueNumber) {
 }
 
 async function loadIssueDescription(projectId, issueNumber) {
+  const descriptionEditorId = 'descriptionEditor'
+
   function urlToAnchorLink(html) {
     const urlRegex = /((?:(http|https|Http|Https|rtsp|Rtsp):\/\/(?:(?:[a-zA-Z0-9$\-_.+\!\*\'\(\)\,\;\?\&\=]|(?:\%[a-fA-F0-9]{2})){1,64}(?:\:(?:[a-zA-Z0-9\$\-\_\.\+\!\*\'\(\)\,\;\?\&\=]|(?:\%[a-fA-F0-9]{2})){1,25})?\@)?)?((?:(?:[a-zA-Z0-9][a-zA-Z0-9\-]{0,64}\.)+(?:(?:aero|arpa|asia|a[cdefgilmnoqrstuwxz])|(?:biz|b[abdefghijmnorstvwyz])|(?:cat|com|coop|c[acdfghiklmnoruvxyz])|d[ejkmoz]|(?:edu|e[cegrstu])|f[ijkmor]|(?:gov|g[abdefghilmnpqrstuwy])|h[kmnrtu]|(?:info|int|i[delmnoqrst])|(?:jobs|j[emop])|k[eghimnrwyz]|l[abcikrstuvy]|(?:mil|mobi|museum|m[acdghklmnopqrstuvwxyz])|(?:name|net|n[acefgilopruz])|(?:org|om)|(?:pro|p[aefghklmnrstwy])|qa|r[eouw]|s[abcdeghijklmnortuvyz]|(?:tel|travel|t[cdfghjklmnoprtvwz])|u[agkmsyz]|v[aceginu]|w[fs]|y[etu]|z[amw]))|(?:(?:25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9])\.(?:25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9]|0)\.(?:25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9]|0)\.(?:25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[0-9])))(?:\:\d{1,5})?)(\/(?:(?:[a-zA-Z0-9\;\/\?\:\@\&\=\#\~\-\.\+\!\*\'\(\)\,\_])|(?:\%[a-fA-F0-9]{2}))*)?(?:\b|$)/gi;
     return html.replace(urlRegex, `<a href="$&">$&</a>`)
   }
 
-  function getDescriptionHtml(issue) {
+  function parseMarkdownToHtml(markdownRaw) {
     // eslint-disable-next-line no-undef
     const converter = new showdown.Converter({
       ghCompatibleHeaderId: true,
@@ -113,7 +130,7 @@ async function loadIssueDescription(projectId, issueNumber) {
     const splitIndex = 3
 
     // Replace relative link with absolute
-    const description = issue.description ? issue.description.replace(/\(([\\/a-zA-Z0-9.]*)\)/, `(https://gitlab.com/${projectId}$1)`) : ''
+    const description = markdownRaw ? markdownRaw.replace(/\(([\\/a-zA-Z0-9.]*)\)/, `(https://gitlab.com/${projectId}$1)`) : ''
     converter.setFlavor('original')
     const markdownHtml = converter.makeHtml(description)
 
@@ -133,14 +150,25 @@ async function loadIssueDescription(projectId, issueNumber) {
       ]).reduce((a, b) => a + b)
     }
 
-    return `
-            <div data-qa-selector="assignee_title">
-                <img src="${issue.authorAvatar}" class="header-user-avatar qa-user-avatar js-sidebar-dropdown-toggle edit-link" width="32" height="32">${issue.authorUsername}<div>Created on ${new Date(issue.createDate).toLocaleDateString()}</div></div>  
-                <div class="value"> <div class="value hide-collapsed" style="margin-top: 10px;"><span class="js-vue-md-preview md md-preview-holder no-value">${descriptionHtml}</span></div>
-            </div>`
+    return descriptionHtml
   }
 
-  function updateDescriptionHtml(html) {
+  function getDescriptionHtml(issue) {
+    const html = `
+    <div data-qa-selector="assignee_title">
+      <a href="#" class="edit-button float-right">Edit</a>
+      <img src="${issue.authorAvatar}" class="header-user-avatar qa-user-avatar js-sidebar-dropdown-toggle edit-link" width="32" height="32">${issue.authorUsername}<div>Created on ${new Date(issue.createDate).toLocaleDateString()}</div></div>  
+      <div id="${descriptionEditorId}" class="hidden value" style="margin-top: 10px;"><textarea class="content"></textarea></div>
+      <div class="value hide-collapsed" style="margin-top: 10px;"><span class="descriptionHtml js-vue-md-preview md md-preview-holder no-value">${parseMarkdownToHtml(issue.description)}</span>
+    </div>`
+
+    return {
+      html: html,
+      descriptionMarkdown: issue.description
+    }
+  }
+
+  function updateDescriptionHtml({html, descriptionMarkdown}) {
     const assigneeNode = document.querySelector('.right-sidebar .block.assignee')
     let newDescription = document.querySelector('div.block.new-description')
     if (newDescription) {
@@ -151,6 +179,26 @@ async function loadIssueDescription(projectId, issueNumber) {
       newDescription.innerHTML = html
       assigneeNode.parentNode.insertBefore(newDescription, assigneeNode)
     }
+
+    let simplemde = new SimpleMDE({ 
+      element: document.getElementById(descriptionEditorId).getElementsByClassName('content')[0],
+      spellChecker: false
+    })
+    simplemde.value(descriptionMarkdown)
+    document.querySelector('.nav-sidebar').style['z-index'] = -1
+
+    newDescription.querySelector('.edit-button').addEventListener('click', async function() {
+      const isConfirmEdit = () => this.classList.contains('editing')
+      if (isConfirmEdit()) {
+        const newMarkdown = simplemde.value()
+        newDescription.querySelector('.descriptionHtml').innerHTML = parseMarkdownToHtml(newMarkdown)
+        const gitlabToken = await loadToken()
+        updateIssueDescription(projectId, issueNumber, newMarkdown, gitlabToken)
+      }
+      this.classList.toggle('editing')
+      this.text = isConfirmEdit() ? 'Confirm' : 'Edit'
+      document.getElementById(descriptionEditorId).classList.toggle('hidden')
+    })
   }
 
   // eslint-disable-next-line no-undef
