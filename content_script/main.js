@@ -184,7 +184,7 @@ async function loadIssueDescription(projectId, issueNumber) {
       element: document.getElementById(descriptionEditorId).getElementsByClassName('content')[0],
       spellChecker: false
     })
-    simplemde.value(descriptionMarkdown)
+    simplemde.value(descriptionMarkdown || '')
     document.querySelector('.nav-sidebar').style['z-index'] = -1
 
     newDescription.querySelector('.edit-button').addEventListener('click', async function() {
