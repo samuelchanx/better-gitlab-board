@@ -33,6 +33,8 @@
         "content_script/storage.js",
         "content_script/showdown.min.js",
         "content_script/simplemde.min.js",
+        "content_script/inline-attachment.js",
+        "content_script/codemirror-4.inline-attachment.js",
         "content_script/main.js"
       ],
       "css": [

@@ -37,7 +37,7 @@ async function updateIssueName(projectId, issueNumber, newName, privateToken) {
 
 async function updateIssueDescription(projectId, issueNumber, description, privateToken) {
   const response = await fetch(`https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/issues/${issueNumber}?description=${encodeURIComponent(description)}`, {
-    method: 'PUT', // *GET, POST, PUT, DELETE, etc.
+    method: 'PUT',
     headers: {
       'PRIVATE-TOKEN': privateToken,
       'cache-control': 'no-cache'
@@ -47,6 +47,29 @@ async function updateIssueDescription(projectId, issueNumber, description, priva
     console.log('OK updating description!')
   } else {
     throw response.error
+  }
+}
+
+/**
+ * @returns {String} file in markdown format
+ *  */
+async function uploadFile(projectId, file, privateToken) {
+  let formData = new FormData()
+  formData.append('file', file)
+  const response = await fetch(`https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/uploads`, {
+    method: 'POST',
+    headers: {
+      'PRIVATE-TOKEN': privateToken,
+      'cache-control': 'no-cache'
+    },
+    body: formData
+  })
+  if (response.ok) {
+    console.log('OK uploading file!')
+    return (await response.json())['markdown'].replace(/^(!\[.*\]\()(\/.*)(\))$/, `$1https://gitlab.com/${projectId}$2$3`)
+  } else {
+    print(response.error)
+    return 'Error uploading...'
   }
 }
 
@@ -168,7 +191,7 @@ async function loadIssueDescription(projectId, issueNumber) {
     }
   }
 
-  function updateDescriptionHtml({html, descriptionMarkdown}) {
+  async function updateDescriptionHtml({html, descriptionMarkdown}) {
     const assigneeNode = document.querySelector('.right-sidebar .block.assignee')
     let newDescription = document.querySelector('div.block.new-description')
     if (newDescription) {
@@ -182,9 +205,40 @@ async function loadIssueDescription(projectId, issueNumber) {
 
     let simplemde = new SimpleMDE({ 
       element: document.getElementById(descriptionEditorId).getElementsByClassName('content')[0],
-      spellChecker: false
+      spellChecker: false,
+      autoFocus: true,
+      initialValue: descriptionMarkdown || ''
     })
-    simplemde.value(descriptionMarkdown || '')
+
+    function updateEditorValue(markdownFileText) {
+      const cm = simplemde.codemirror
+      const startPoint = cm.getCursor('start')
+      const endPoint = cm.getCursor('end')
+      cm.replaceRange(markdownFileText, startPoint, endPoint)
+    }
+
+    inlineAttachment.editors.codemirror4.attach(simplemde.codemirror, {
+      uploadUrl: `https://gitlab.com/api/v4/projects/${projectId}/uploads`,
+      jsonFieldName: 'url',
+      extraHeaders: {
+        'PRIVATE-TOKEN': await loadToken()
+      },
+      onFileReceived: function(file) {
+        const reader = new FileReader()
+        reader.addEventListener('loadend', async function() {
+          console.log(reader.result)
+          const markdownFileText = await uploadFile(projectId, file, await loadToken())
+          updateEditorValue(markdownFileText)
+        })
+        reader.readAsBinaryString(file)
+        return false
+      },
+      beforeFileUpload: function(xhr) {
+        return false
+      },
+    })
+
+    // To fix side bar hiding full screen editor
     document.querySelector('.nav-sidebar').style['z-index'] = -1
 
     newDescription.querySelector('.edit-button').addEventListener('click', async function() {
