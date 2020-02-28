@@ -16,26 +16,27 @@
       "48": "icons/icon-48.png"
     }
   },
-  "permissions": ["storage"],
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "{cdf91ac1-4039-4dde-84a5-cf00f0dcac1f}"
-    },
-    "edge": {
-      "browser_action_next_to_addressbar": true
-    }
-  },
+  "permissions": [
+    "storage"
+  ],
+  "web_accessible_resources": [
+    "content_script/simplemde.min.css"
+  ],
   "content_scripts": [
     {
       "matches": [
-        "*://*.gitlab.com/*/boards/*", 
+        "*://*.gitlab.com/*/boards/*",
         "*://*.gitlab.com/*/boards",
         "*://*.gitlab.com/*/boards*"
       ],
       "js": [
         "content_script/storage.js",
         "content_script/showdown.min.js",
+        "content_script/simplemde.min.js",
         "content_script/main.js"
+      ],
+      "css": [
+        "content_script/simplemde.min.css"
       ]
     }
   ]

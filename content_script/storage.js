@@ -17,7 +17,8 @@ function loadToken() {
   } else {
     return new Promise(function (resolve) {
       chrome.storage.sync.get(gitlabToken, function (result) {
-        resolve(result)
+        const { gitlabToken } = result
+        resolve(gitlabToken)
       })
     })
   }
