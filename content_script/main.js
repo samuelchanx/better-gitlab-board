@@ -85,7 +85,7 @@ function listenForIssueNameUpdate(projectId, issueNumber) {
       event.preventDefault()
 
       // eslint-disable-next-line no-undef
-      let { gitlabToken } = await loadToken()
+      let gitlabToken = await loadToken()
       console.log(`Token retrieved: ${gitlabToken}`)
 
       if (!gitlabToken) throw Error('Token invalid')
@@ -154,9 +154,7 @@ async function loadIssueDescription(projectId, issueNumber) {
   }
 
   // eslint-disable-next-line no-undef
-  const {
-    gitlabToken
-  } = await loadToken()
+  const gitlabToken = await loadToken()
   const issueKey = `${projectId}/${issueNumber}`
 
   // Load cache
@@ -203,7 +201,7 @@ function listenForIssueTimeTrack(projectId, issueNumber) {
 
   async function addListeners() {
     // eslint-disable-next-line no-undef
-    let { gitlabToken } = await loadToken()
+    let gitlabToken = await loadToken()
 
     document.querySelector(timeTrackSelector).querySelectorAll('.estimate, .spend').forEach(elem => {
       elem.addEventListener('click', function(e) {
