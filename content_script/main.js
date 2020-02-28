@@ -141,7 +141,7 @@ async function loadIssueDescription(projectId, issueNumber) {
     const doc = parser.parseFromString(`<div>${markdownHtml}</div>`, 'text/html');
     let markdownElems = Array.from(doc.querySelector('div').children).map(elem => elem.outerHTML)
     if (markdownElems.length > splitIndex) {
-      const toggleBtn = `<button data-toggle="collapse" aria-expanded="false" aria-controls="collapseDescription" href="#collapseDescription" class="collapsed btn-link bold" style="color: blueviolet;"> >> show/hide</button>`
+      const toggleBtn = `<button data-toggle="collapse" aria-expanded="false" aria-controls="collapseDescription" href="#collapseDescription" class="collapsed btn-link bold" style="color: #588be7;"> >> show details</button>`
       descriptionHtml = markdownElems.slice(0, splitIndex).concat([
         `<div id="collapseDescription" class="collapse">`,
         markdownElems.slice(splitIndex).length !== 0 ? markdownElems.slice(splitIndex).reduce((a, b) => a + b) : '',
