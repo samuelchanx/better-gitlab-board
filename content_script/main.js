@@ -142,6 +142,7 @@ async function loadIssueDescription(projectId, issueNumber) {
     return html.replace(urlRegex, `<a href="$&">$&</a>`)
   }
 
+
   function parseMarkdownToHtml(markdownRaw) {
     // eslint-disable-next-line no-undef
     const converter = new showdown.Converter({
@@ -177,6 +178,10 @@ async function loadIssueDescription(projectId, issueNumber) {
   }
 
   function getDescriptionHtml(issue) {
+    function imgToAbsoluteLink(html) {
+      return html.replace(/<img src="(\/.*)"/g, `<img src="https://gitlab.com/${projectId}$1"`)
+    }
+
     const html = `
     <div data-qa-selector="assignee_title">
       <a href="#" class="edit-button float-right">Edit</a>
@@ -186,7 +191,7 @@ async function loadIssueDescription(projectId, issueNumber) {
     </div>`
 
     return {
-      html: html,
+      html: imgToAbsoluteLink(html),
       descriptionMarkdown: issue.description
     }
   }
@@ -368,7 +373,7 @@ function main() {
 
     let issueNumber = document.querySelector('.right-sidebar .issuable-header-text span').innerText.replace(/[^0-9]/g, '')
     let projectIdRaw = activeIssueElem.querySelector('.board-card-title a').getAttribute('href')
-    const projectId = /(?=[^/])(.+)(?=\/issues)/g.exec(projectIdRaw)[0]
+    const projectId = /(?=[^/])(.+)(?=\/issues)/g.exec(projectIdRaw)[0].replace('/-', '')
 
     loadIssueDescription(projectId, issueNumber)
     listenForIssueNameUpdate(projectId, issueNumber)
